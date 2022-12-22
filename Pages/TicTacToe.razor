@@ -1,0 +1,106 @@
+@using TicTacToeBlazor.GameLibrary
+@page "/TicTacToe"
+
+<PageTitle>Tic-tac-toe!</PageTitle>
+
+<style>
+    td {
+    border: 1px solid black;
+    height: 50px;
+    width: 50px;
+    text-align: center;
+    }
+</style>
+
+<h1>Tic-tac-toe!</h1>
+Play against the computer!
+
+<div width="0.5">
+    <table>
+    <tr>
+        <td @onclick="() => MakeMove(0)">@board[0]</td>
+        <td @onclick="() => MakeMove(1)">@board[1]</td>
+        <td @onclick="() => MakeMove(2)">@board[2]</td>
+    </tr>
+    <tr>
+        <td @onclick="() => MakeMove(3)">@board[3]</td>
+        <td @onclick="() => MakeMove(4)">@board[4]</td>
+        <td @onclick="() => MakeMove(5)">@board[5]</td>
+    </tr>
+    <tr>
+        <td @onclick="() => MakeMove(6)">@board[6]</td>
+        <td @onclick="() => MakeMove(7)">@board[7]</td>
+        <td @onclick="() => MakeMove(8)">@board[8]</td>
+    </tr>
+</table>
+
+@if (gameOver)
+{
+<p>Game is over! Click "reset" to play again.</p>
+}
+
+<p>difficulty: @gameDifficulty</p>
+
+<button @onclick="() => gameDifficulty = Difficulty.easy">easy</button>
+<button @onclick="() => gameDifficulty = Difficulty.medium">medium</button>
+<button @onclick="() => gameDifficulty = Difficulty.hard">hard</button>
+<br>
+<button @onclick="Reset">reset</button>
+</div>
+
+@code {
+    private string board = "         ";
+    private bool computerTurn = false;
+    private bool gameOver = false;
+    private Difficulty gameDifficulty = Difficulty.medium;
+
+    public enum Difficulty { easy, medium, hard };
+
+    private void Reset ()
+    {
+        board = "         ";
+        computerTurn = false;
+        gameOver = false;
+    }
+
+    private void MakeMove(int index)
+    {
+        if (board[index] != ' ' || computerTurn || gameOver)
+            return;
+
+        char[] newBoard = board.ToCharArray();
+        
+        newBoard[index] = 'x';
+
+        board = new string(newBoard);
+
+        computerTurn = true;
+
+        if (GameBoard.IsGameOver(board))
+        {
+            gameOver = true;
+            return;
+        }
+
+        ComputerMove();
+
+        if (GameBoard.IsGameOver(board))
+        {
+            gameOver = true;
+            return;
+        }
+    }
+
+    private void ComputerMove()
+    {
+        string newBoard;
+        switch(gameDifficulty)
+        {
+            case Difficulty.easy: newBoard = GameStrategy.PlayWinOrRandom(board, 'o'); break;
+            case Difficulty.medium: newBoard = GameStrategy.PlayNoForking(board, 'o'); break;
+            default: newBoard = GameStrategy.OptimalPlay(board, 'o'); break;
+        }
+        board = newBoard;
+        computerTurn = false;
+    }
+}
